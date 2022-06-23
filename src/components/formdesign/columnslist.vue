@@ -1,0 +1,233 @@
+<template>
+  <div>
+    <el-col :span="9" class="propertyborder-title">
+      <a-tooltip>
+        <template slot="title">{{ content }}</template>
+        {{ title }}
+      </a-tooltip>
+    </el-col>
+    <el-col :span="15" class="propertyborder-content">
+      <el-dropdown @command="addDetailColumn">
+        <span class="el-dropdown-link">
+          添加字段<i class="el-icon-arrow-down el-icon--right"></i>
+        </span>
+        <el-dropdown-menu slot="dropdown">
+          <div v-for="ctrl in basicComponents" :key="ctrl.type">
+            <el-dropdown-item
+              v-if="ctrl.dragType === 'control'"
+              :command="ctrl"
+              >{{ ctrl.name }}</el-dropdown-item
+            >
+          </div>
+          <div v-for="ctrl in platformComponents" :key="ctrl.type">
+            <el-dropdown-item
+              v-if="ctrl.dragType === 'control'"
+              :command="ctrl"
+              >{{ ctrl.name }}</el-dropdown-item
+            >
+          </div>
+        </el-dropdown-menu>
+      </el-dropdown>
+    </el-col>
+    <el-col :span="24" class="widget-config-container">
+      <template>
+        <draggable
+          tag="ul"
+          :list="datalist"
+          v-bind="{
+            group: { name: 'options1' },
+            ghostClass: 'ghost',
+            handle: '.drag-item'
+          }"
+          handle=".drag-item"
+        >
+          <li
+            v-for="(item, index) in datalist"
+            :key="index"
+            style="background: lightgray;padding: 2px;margin-bottom:2px;"
+          >
+            <!-- <el-input placeholder="栅格值" size="mini" style="width: 100px;" type="number" v-model.number="item.span"></el-input> -->
+            <div style="display:inline-block;width:60%;padding-left:10px;">
+              <el-popover width="300" trigger="click">
+                <Icons :icon.sync="item.icon" />
+                <i
+                  :class="item.icon"
+                  slot="reference"
+                  style="font-size:12px;margin-right:5px;width:10px;"
+                ></i>
+              </el-popover>
+              <input v-model="item.options.labelTitle" style="width:80px" />
+            </div>
+            <el-button
+              circle
+              plain
+              type="danger"
+              size="mini"
+              icon="fa fa-bolt"
+              :key="index"
+              @click="showJSDialog(index)"
+              style="padding: 4px;margin-left: 5px;width:22px;"
+            ></el-button>
+            <el-button
+              @click="handleButtonRemove(index)"
+              circle
+              plain
+              type="danger"
+              size="mini"
+              icon="el-icon-minus"
+              style="padding: 4px;margin-left: 5px;"
+            ></el-button>
+            <i
+              class="drag-item fa fa-bars"
+              style="font-size: 16px;margin: 0 5px;cursor: move;"
+            ></i>
+          </li>
+        </draggable>
+      </template>
+    </el-col>
+  </div>
+</template>
+<script>
+import draggable from 'vuedraggable'
+import {
+  basicComponents,
+  platformComponents
+} from '@/components/formdesign/controlconfig.js'
+export default {
+  props: ['title', 'content', 'datalist'],
+  data() {
+    return { basicComponents, platformComponents }
+  },
+  components: { draggable },
+  methods: {
+    addDetailColumn(ctrl) {
+      console.log(ctrl)
+      let cloneData = {
+        ...ctrl,
+        isShowSpanSetting: false,
+        options: { ...ctrl.options },
+        key: Date.parse(new Date()) + '_' + Math.ceil(Math.random() * 99999)
+      }
+
+      const labelId =
+        Date.parse(new Date()) / 1000 + '' + Math.ceil(Math.random() * 99999)
+      const ctrlId =
+        Date.parse(new Date()) / 1000 + '' + Math.ceil(Math.random() * 99999)
+      console.log(labelId + '_' + ctrlId)
+      if (typeof cloneData.options.labelId !== 'undefined') {
+        cloneData.options.labelId = labelId
+      }
+
+      if (typeof cloneData.options.controlId !== 'undefined') {
+        cloneData.options.controlId = ctrlId
+      }
+
+      if (
+        ctrl.type === 'radio' ||
+        ctrl.type === 'checkbox' ||
+        ctrl.type === 'select'
+      ) {
+        cloneData = {
+          ...cloneData,
+          options: {
+            ...cloneData.options,
+            options: cloneData.options.options.map(item => ({ ...item }))
+          }
+        }
+      } else if (ctrl.type === 'button') {
+        cloneData.options.labelTitle = '操作'
+        cloneData.options.width = ''
+      }
+      const index = this.datalist.length + 1
+      cloneData.options.filed = 'filed' + index
+      this.datalist.splice(index, 0, cloneData)
+    },
+    handleButtonRemove(index) {
+      this.datalist.splice(index, 1)
+    },
+    showJSDialog(index) {
+      console.log(index)
+    }
+  }
+}
+</script>
+<style scoped lang="less">
+.propertyborder-title {
+  height: 42px;
+  line-height: 42px;
+  padding-left: 3px;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-right: none;
+}
+
+.propertyborder-content {
+  border: 1px solid #ccc;
+  border-top: none;
+  border-right: none;
+  padding-right: 3px;
+  padding-left: 3px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  height: 42px;
+}
+.widget-config-container {
+  position: relative;
+
+  .el-header {
+    border-bottom: solid 2px #e4e7ed;
+    padding: 0px;
+  }
+
+  .column-setting .el-form-item__label {
+    float: none;
+    display: inline-block;
+    text-align: left;
+    padding: 0 0 2px;
+  }
+
+  .config-content {
+    border-left: solid 1px #e6e6e6;
+
+    .el-form-item__label {
+      padding: 0;
+      font-weight: 500;
+      float: none;
+    }
+
+    .el-form-item {
+      /*border-bottom: solid 1px #e1e1e1;
+            margin-bottom: 0px;*/
+      margin: 5px;
+    }
+  }
+
+  .ghost {
+    background: #fff;
+    border: 1px dashed #409eff;
+
+    &::after {
+      background: #fff;
+      display: block;
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+    }
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+  }
+
+  li.ghost {
+    list-style: none;
+    font-size: 0;
+    display: block;
+    position: relative;
+  }
+}
+</style>
