@@ -1,0 +1,622 @@
+﻿<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <SCRIPT src="/jquery-1.7.2.min.js" type="text/javascript">
+    </SCRIPT>
+    <SCRIPT src="/jquery.tmpl.js" type="text/javascript">
+    </SCRIPT>
+    <SCRIPT src="/htmlformat.js" type="text/javascript">
+    </SCRIPT>
+    <SCRIPT src="/beautify.js" type="text/javascript">
+    </SCRIPT>
+</head>
+<body>
+    <div id="fromhtml"> </div>
+    <script id="miantmpl" type="text/x-jquery-tmpl">
+        <template>
+            <div>
+                {{each layoutitemlist}}
+                <el-col :span="${span}">
+                    {{each widgetForm.list}}
+                    {{tmpl($value) '#panelcodetmpl'}}
+                    {{/each}}
+                </el-col>
+                {{/each}}
+
+                {{each layerlist}}
+                {{tmpl($value) '#dialogcodetmpl'}}
+                {{/each}}
+            </div>
+        </template>
+    </script>
+    <script id="panelcodetmpl" type="type/x-jquery-tmpl">
+        {{if type=="gridPanel"}}
+      
+            {{each columns}}
+            <el-col :span="${span ? span : 0}" {{html options.tagattr}}>
+                {{tmpl($value) '#fromcodetmpl'}}
+            </el-col>
+            {{/each}}
+           
+        {{else type=="tabs"}}
+            <el-col :span="${options.spans ? options.spans : 0}">
+                <el-tabs>
+                    {{each options.panelist}}
+                    <el-tab-pane label="${title}"
+                                 name="${name}" {{html options.tagattr}}>
+                        <el-row type="flex">
+                            {{each  columns}}
+                            <el-col :span="${span ? span : 0}">
+                                <div style="border: 1px dashed #999;">
+                                    <el-row style="border: 1px solid #ccc;border-top: none;border-left: none;border-bottom: none;">
+                                        {{tmpl($value) '#fromcodetmpl'}}
+                                    </el-row>
+                                </div>
+                            </el-col>
+                            {{/each}}
+                        </el-row>
+                    </el-tab-pane>
+                    {{/each}}
+                </el-tabs>
+            </el-col>
+            {{else type=="collapse"}}
+            <el-col :span="${options.spans ? options.spans : 0}">
+                <a-collapse {{html options.tagattr}}>
+                    {{each options.panelist}}
+                    <a-collapse-panel header="${title}">
+                        <el-row type="flex">
+                            {{each  columns}}
+                            <el-col span="${span ? span : 0}">
+                                <div style="border: 1px dashed #999;">
+                                    <el-row style="border: 1px solid #ccc;border-top: none;border-left: none;border-bottom: none;">
+                                        {{tmpl($value) '#fromcodetmpl'}}
+                                    </el-row>
+                                </div>
+                            </el-col>
+                            {{/each}}
+                        </el-row>
+                    </a-collapse-panel>
+                    {{/each}}
+                </a-collapse>
+            </el-col>
+            {{else}}
+            {{/if}}
+    </script>
+    <script id="dialogcodetmpl" type="type/x-jquery-tmpl">
+        <zhlDialog title="${options.labelTitle}"
+                   ref="${options.idPrefix}"
+                   width="${options.width.indexOf("%")<0&&options.width.indexOf("px")<0?(options.width+"px"):options.width}" 
+                   height=""
+                   class="my-dialog">
+                    <div style="min-height:${options.height.indexOf("%")<0 &&options.height.indexOf("px")<0?(options.height+"px"):options.height}">
+                                                                                                 {{each list}}
+                                                                                                 {{tmpl($value) '#panelcodetmpl'}}
+                                                                                                 {{/each}}
+                      </div>
+        </zhlDialog>
+    </script>
+    <script id="fromcodetmpl" type="type/x-jquery-tmpl">
+        {{each list}}
+
+        {{if type == 'wmpDetail'}}
+        <el-col :span="24">
+            <el-table :data="formData.${options.controlId}" border style="width: 100%" {{html options.tagattr}}>
+                {{each options.columns}}
+                {{if type=="showno"}}
+                {{else}}
+                <el-table-column prop="${options.filed}"
+                                 label="${options.labelTitle}">
+                    <template slot-scope="scope">
+                        <div class="el-input el-input--small">
+                            {{if  type=="input"}}
+                            <el-input placeholder="请输入${ options.labelTitle }内容" ${options.disabled?"disabled":""} v-model="scope.row.${options.filed}" maxlength="${options.dataLength}" ${getevent(eventlist)} {{html options.tagattr}}></el-input>
+                            {{else type == 'textarea'}}
+                            <el-input type="textarea"
+                                      rows="2"
+                                      placeholder="请输入${ options.labelTitle }内容" ${options.disabled?"disabled":""} v-model="scope.row.${options.filed}" maxlength="${options.dataLength}" ${getevent(eventlist)} {{html options.tagattr}}>
+                            </el-input>
+                            {{else type == 'select'}}
+                        <el-select placeholder="请选择${ options.labelTitle }" ${options.disabled?"disabled":""} v-model="scope.row.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}}>
+                            {{each options.options}}
+                            <el-option label="${label}"
+                                       value="${value}">
+                            </el-option>
+                            {{/each}}
+                        </el-select>
+                            {{else type == 'date'}}
+                            {{if options.modeltype == 'date'}}
+                            <a-date-picker placeholder="${options.placeholder}"
+                                           format="${options.format}"
+                                           ${options.disabled?"disabled":""} v-model="scope.row.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}} />
+                            {{else options.modeltype == 'month'}}
+                            <a-month-picker placeholder="${options.placeholder}"
+                                            format="yyyy-MM"
+                                            ${options.disabled?"disabled":""} v-model="scope.row.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}} />
+                            {{else options.modeltype == 'week'}}
+                            <a-week-picker placeholder="${options.placeholder}"
+                                           ${options.disabled?"disabled":""} v-model="scope.row.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}} />
+                            {{else options.modeltype == 'range'}}
+                            <a-range-picker placeholder="${options.placeholder}"
+                                            format="${options.format}"
+                                            style="width:100%"
+                                            ${options.disabled?"disabled":""} v-model="scope.row.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}} />
+                            {{/if}}
+                            {{else type == 'radio'}}
+                            <el-radio-group size="mini"
+                                            style="line-height:43px; display:block;" ${options.disabled?"disabled":""} v-model="scope.row.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}}>
+                                {{each options.options}}
+                                <el-radio style="inline"
+                                          label="${value}">${ label }</el-radio>
+                                {{/each}}
+                            </el-radio-group>
+                            {{else type == 'checkbox'}}
+                            <el-checkbox-group size="mini"
+                                               style="line-height:43px;" ${options.disabled?"disabled":""} v-model="scope.row.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}}>
+                                {{each options.options}}
+                                <el-checkbox style="inline"
+                                             label="${value}" disabled>${label}</el-checkbox>
+                                {{/each}}
+                            </el-checkbox-group>
+                            {{else type == 'editor'}}
+
+                            {{else type == 'blank'}}
+
+                            {{else type == 'rate'}}
+                            <el-rate ${options.readonly?"readonly='true' ":" "} v-model="scope.row.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}}></el-rate>
+                            {{else type == 'inputnumber'}}
+                            <el-input-number ${options.disabled?"disabled":""}
+                                             min="${options.min}"
+                                             max="${options.max}"
+                                             label="${options.describe}"
+                                             step="${options.step}"
+                                             precision="${options.precision}" v-model="scope.row.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}}></el-input-number>
+                            {{else type == 'timepicker'}}
+                            <a-time-picker use12-hours
+                                           format="${options.timeformat}"
+                                           ${options.disabled?"disabled":""}
+                                           minute-step="${options.minute}"
+                                           second-step="${options.second}" v-model="scope.row.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}} />
+
+                            {{else type == 'user'}}
+                            <a-input-search placeholder="input search text"   {{html options.tagattr}} />
+                            {{else type == 'department'}}
+                            <input type="text" placeholder="" class="form-control" {{html options.tagattr}}><i aria-hidden="true" class="fa fa-search" style="position: absolute; right: 25px; top: 15px;"></i>
+                            {{else type == 'project'}}
+                            <input type="text" placeholder="" class="form-control" {{html options.tagattr}}><i aria-hidden="true" class="fa fa-search" style="position: absolute; right: 25px; top: 15px;"></i>
+                            {{else type == 'cost'}}
+                            <input type="text" placeholder="" class="form-control" {{html options.tagattr}}><i aria-hidden="true" class="fa fa-search" style="position: absolute; right: 25px; top: 15px;"></i>
+                            {{else type == 'choose'}}
+                            <input type="text" placeholder="" class="form-control" {{html options.tagattr}}><i aria-hidden="true" class="fa fa-search" style="position: absolute; right: 25px; top: 15px;"></i>
+                            {{else  type == 'button' }}
+                            {{each options.buttons}}
+                        <el-button style="margin-left:5px;" size="mini" plain ${getevent(eventlist)} {{html options.tagattr}}>
+                            <i class="${options.icon}"></i>
+                            &nbsp;
+                            ${options.text}
+                        </el-button>
+                            {{/each}}
+
+                            {{/if}}
+
+                        </div>
+                    </template>
+                </el-table-column>
+                {{/if}}
+                {{/each}}
+            </el-table>
+        </el-col>
+        ${setfromData(options,type)}
+        {{else type == 'listview'}}
+        <el-col :span="24">
+            <gridlist :queryparam="formData.${options.controlId}.queryparam"
+                      apicode="${options.sourceApi}"
+                      ref="${options.controlId}"
+                      :scopedSlots="formData.${options.controlId}.scopedSlots" {{html options.tagattr}}>
+
+            </gridlist>
+        </el-col>
+        ${setfromData(options,type)}
+        {{else rowcontrolstr.indexOf(type + ',') >= 0}}
+        <el-col :span="${options.spans * 2}">
+            <el-col class="border-content"
+                    style="${getrowcontrolcss($value)}">
+                {{if type == 'tree'}}
+                <el-tree></el-tree>
+                {{else type == 'navmenu' }}
+                <el-menu class="el-menu-demo" mode="horizontal">
+                    <el-menu-item index="1">处理中心</el-menu-item>
+                    <el-submenu index="2">
+                        <template slot="title">
+                            我的工作台
+                        </template>
+                        <el-menu-item index="2-1">选项1</el-menu-item>
+                        <el-menu-item index="2-2">选项2</el-menu-item>
+                        <el-menu-item index="2-3">选项3</el-menu-item>
+                        <el-submenu index="2-4">
+                            <template slot="title">
+                                选项4
+                            </template>
+                            <el-menu-item index="2-4-1">选项1</el-menu-item>
+                            <el-menu-item index="2-4-2">选项2</el-menu-item>
+                            <el-menu-item index="2-4-3">选项3</el-menu-item>
+                        </el-submenu>
+                    </el-submenu>
+                    <el-menu-item index="3" disabled>消息中心</el-menu-item>
+                    <el-menu-item index="4">
+                        <a href="https://www.ele.me" target="_blank">订单管理</a>
+                    </el-menu-item>
+                </el-menu>
+                {{else type == 'partlayout' }}
+                {{tmpl($value) '#fromcodetmpl'}}
+                {{else type == 'dynamiclayout' }}
+                {{each options.dynamiclist}}
+                <el-col :span="24" style="${'dispaly:'+($index==0?" ":" none")}">
+                    {{tmpl($value) '#fromcodetmpl'}}
+                </el-col>
+                {{/each}}
+                {{else type == 'calendar' }}
+                <el-calendar>
+                    <!-- 这里使用的是 2.5 slot 语法，对于新项目请使用 2.6 slot 语法-->
+                </el-calendar>
+                {{else type == 'imgage' }}
+                <img data-v-6c4399d0=""
+                     src="http://localhost:8080/file/downloadImg?path=AttachmentFile%5C2021-01-11-12-30%5Ca54eb02e-faca-46a4-8262-e8ea6cefa217.jpg"
+                     width="150px"
+                     height="80px" />
+                {{else type == 'upFilesComp' }}
+                <upFilesComp></upFilesComp>
+                {{/if}}
+            </el-col>
+        </el-col>
+        {{else type == 'button'}}
+        <el-col span="${options.spans * 2}" class="border-content">
+            {{each options.buttons}}
+            <el-button style="margin-left:5px;    margin-top: 5px;" size="mini" plain ${getevent(eventlist)} {{html options.tagattr}}>
+                <i class="${options.icon}"></i>
+                &nbsp;
+                ${options.labelTitle}
+            </el-button>
+            {{/each}}
+        </el-col>
+        {{else}}
+    <el-col :span="${totalSpans(options)}"
+            class="widget-view ${ type == 'textarea'||type == 'editor'?" border-mult":""}"
+            style="padding:0px">
+        {{if options.labelTitle !== ''}}
+        <el-col :span="${innerLabelSpan(options)}"
+                class="border-title ${ options.required == true?" required":"" }">
+            ${ options.labelTitle }
+        </el-col>
+        {{/if}}
+        ${setfromData(options,type)}
+        <el-col :span="${innerCtrlSpan(options)}"
+                class="border-content"
+                style="${'height:'+(options.rowSpan !== undefined? 42 * options.rowSpan + 'px': '')}">
+            {{if type == 'input'}}
+            <el-input placeholder="请输入${ options.labelTitle }内容" ${options.disabled?"disabled":""} v-model="formData.${options.filed}" maxlength="${options.dataLength}" ${getevent(eventlist)} {{html options.tagattr}}></el-input>
+            {{else type == 'textarea'}}
+            <el-input type="textarea"
+                      rows="2"
+                      placeholder="请输入${ options.labelTitle }内容" ${options.disabled?"disabled":""} v-model="formData.${options.filed}" maxlength="${options.dataLength}" ${getevent(eventlist)} {{html options.tagattr}}>
+            </el-input>
+            {{else type == 'editor'}}
+            <Editor ref="${options.filed}"
+                    :value="formData.${options.filed}"></Editor>
+            {{else type == 'select'}}
+        <el-select placeholder="请选择${ options.labelTitle }" ${options.disabled?"disabled":""} v-model="formData.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}}>
+            {{each options.options}}
+            <el-option 
+                       label="${label}"
+                      value="${value}">
+            </el-option>
+            {{/each}}
+        </el-select>
+            {{else type == 'date'}}
+            {{if options.modeltype == 'date'}}
+            <a-date-picker placeholder="${options.placeholder}"
+                           format="${options.format}"
+                           ${options.disabled?"disabled":""} v-model="formData.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}} />
+            {{else options.modeltype == 'month'}}
+            <a-month-picker placeholder="${options.placeholder}"
+                            format="yyyy-MM"
+                            ${options.disabled?"disabled":""} v-model="formData.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}} />
+            {{else options.modeltype == 'week'}}
+            <a-week-picker placeholder="${options.placeholder}"
+                           ${options.disabled?"disabled":""} v-model="formData.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}} />
+            {{else options.modeltype == 'range'}}
+            <a-range-picker placeholder="${options.placeholder}"
+                            format="${options.format}"
+                            style="width:100%"
+                            ${options.disabled?"disabled":""} v-model="formData.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}} />
+            {{/if}}
+            {{else type == 'radio'}}
+            <el-radio-group size="mini"
+                            style="line-height:43px; display:block;" ${options.disabled?"disabled":""} v-model="formData.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}}>
+                {{each options.options}}
+                <el-radio style="inline"
+                          label="${value}">${ label }</el-radio>
+                {{/each}}
+            </el-radio-group>
+            {{else type == 'checkbox'}}
+            <el-checkbox-group size="mini"
+                               style="line-height:43px;" ${options.disabled?"disabled":""} v-model="formData.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}}>
+                {{each options.options}}
+                <el-checkbox style="inline"
+                             label="${value}" disabled>${label}</el-checkbox>
+                {{/each}}
+            </el-checkbox-group>
+            {{else type == 'editor'}}
+
+            {{else type == 'blank'}}
+
+            {{else type == 'rate'}}
+            <el-rate ${options.readonly?"readonly='true' ":" "} v-model="formData.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}}></el-rate>
+            {{else type == 'inputnumber'}}
+            <el-input-number ${options.disabled?"disabled":""}
+                             min="${options.min}"
+                             max="${options.max}"
+                             label="${options.describe}"
+                             step="${options.step}"
+                             precision="${options.precision}" v-model="formData.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}}></el-input-number>
+            {{else type == 'timepicker'}}
+            <a-time-picker use12-hours
+                           format="${options.timeformat}"
+                           ${options.disabled?"disabled":""}
+                           minute-step="${options.minute}"
+                           second-step="${options.second}" v-model="formData.${options.filed}" ${getevent(eventlist)} {{html options.tagattr}} />
+
+            {{else type == 'user'}}
+            <span class="ant-input-search ant-input-affix-wrapper" data-v-a1ccd506="" {{html options.tagattr}}><input placeholder="${options.precision}" v-model="formData.${options.filed}.text" type="text" readonly="readonly" class="ant-input"><span class="ant-input-suffix" @click="$refs.${options.filed}dialog.visible = true"><i aria-label="图标: search" tabindex="-1" class="anticon anticon-search ant-input-search-icon"><svg viewBox="64 64 896 896" data-icon="search" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class=""><path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0 0 11.6 0l43.6-43.5a8.2 8.2 0 0 0 0-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"></path></svg></i></span></span>
+            <zhlDialog title="${options.precision}"
+                       ref="${options.filed}dialog"
+                       width="960px"
+                       class="my-dialog">
+                <selector :typemode="1"
+                          @confirm="selector${options.filed}confirm"
+                          @close="$refs.${options.filed}dialog.visible = false"></selector>
+            </zhlDialog>
+            ${addselectorconfirm(options.filed)}
+            {{else type == 'department'}}
+            <span class="ant-input-search ant-input-affix-wrapper" data-v-a1ccd506="" {{html options.tagattr}}><input placeholder="${options.precision}" v-model="formData.${options.filed}.text" type="text" readonly="readonly" class="ant-input"><span class="ant-input-suffix" @click="$refs.${options.filed}dialog.visible = true"><i aria-label="图标: search" tabindex="-1" class="anticon anticon-search ant-input-search-icon"><svg viewBox="64 64 896 896" data-icon="search" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class=""><path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0 0 11.6 0l43.6-43.5a8.2 8.2 0 0 0 0-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"></path></svg></i></span></span>
+            <zhlDialog title="${options.precision}"
+                       ref="${options.filed}dialog"
+                       width="960px"
+                       class="my-dialog">
+                <selector :typemode="2"
+                          @confirm="selector${options.filed}confirm"
+                          @close="$refs.${options.filed}dialog.visible = false"></selector>
+            </zhlDialog>
+            ${addselectorconfirm(options.filed)}
+            {{else type == 'project'}}
+            <span class="ant-input-search ant-input-affix-wrapper" data-v-a1ccd506="" {{html options.tagattr}}><input placeholder="${options.precision}" v-model="formData.${options.filed}.text" type="text" readonly="readonly" class="ant-input"><span class="ant-input-suffix"><i aria-label="图标: search" tabindex="-1" class="anticon anticon-search ant-input-search-icon"><svg viewBox="64 64 896 896" data-icon="search" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class=""><path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0 0 11.6 0l43.6-43.5a8.2 8.2 0 0 0 0-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"></path></svg></i></span></span>
+            {{else type == 'cost'}}
+            <span class="ant-input-search ant-input-affix-wrapper" data-v-a1ccd506="" {{html options.tagattr}}><input placeholder="${options.precision}" v-model="formData.${options.filed}.text" type="text" readonly="readonly" class="ant-input"><span class="ant-input-suffix"><i aria-label="图标: search" tabindex="-1" class="anticon anticon-search ant-input-search-icon"><svg viewBox="64 64 896 896" data-icon="search" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class=""><path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0 0 11.6 0l43.6-43.5a8.2 8.2 0 0 0 0-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"></path></svg></i></span></span>
+            {{else type == 'choose'}}
+            <span class="ant-input-search ant-input-affix-wrapper" data-v-a1ccd506="" {{html options.tagattr}}><input placeholder="${options.precision}" v-model="formData.${options.filed}.text" type="text" readonly="readonly" class="ant-input"><span class="ant-input-suffix"><i aria-label="图标: search" tabindex="-1" class="anticon anticon-search ant-input-search-icon"><svg viewBox="64 64 896 896" data-icon="search" width="1em" height="1em" fill="currentColor" aria-hidden="true" focusable="false" class=""><path d="M909.6 854.5L649.9 594.8C690.2 542.7 712 479 712 412c0-80.2-31.3-155.4-87.9-212.1-56.6-56.7-132-87.9-212.1-87.9s-155.5 31.3-212.1 87.9C143.2 256.5 112 331.8 112 412c0 80.1 31.3 155.5 87.9 212.1C256.5 680.8 331.8 712 412 712c67 0 130.6-21.8 182.7-62l259.7 259.6a8.2 8.2 0 0 0 11.6 0l43.6-43.5a8.2 8.2 0 0 0 0-11.6zM570.4 570.4C528 612.7 471.8 636 412 636s-116-23.3-158.4-65.6C211.3 528 188 471.8 188 412s23.3-116.1 65.6-158.4C296 211.3 352.2 188 412 188s116.1 23.2 158.4 65.6S636 352.2 636 412s-23.3 116.1-65.6 158.4z"></path></svg></i></span></span>
+            {{/if}}
+        </el-col>
+    </el-col>
+        {{/if}}
+        {{/each}}
+    </script>
+    <script type="text/javascript">
+  var formData = {};
+  var eventdatafunction = {};
+  var jsobject = {};
+  var rowcontrolstr = 'tree,navmenu,blank,partlayout,dynamiclayout,calendar,imgage,upFilesComp,'; ///占整行的控件
+  var dynamicheight = 'partlayout,tree,calendar,imgage,upFilesComp,'; ///由内部控件撑高度的控件
+  var minheight = 'partlayout,dynamiclayout,'
+      ///大小写问题 需要替换
+  var casestring = {
+      zhldialog: 'zhlDialog',
+      upfilescomp: 'upFilesComp',
+      editor:'Editor'
+  }
+
+  function buildpubish(frominfo, jscode) {
+      loadjscode(jscode);
+      var htmlcode = $("#miantmpl").tmpl(frominfo).prop("outerHTML");
+      var tabsize = 4;
+      var tabchar = ' ';
+      for (var key in casestring) {
+          var reg = new RegExp(key, "g");
+          htmlcode = htmlcode.replace(reg, casestring[key]);
+      } 
+      htmlcode = style_html(htmlcode, tabsize, tabchar, 80);
+      var tabsize = 4;
+      var tabchar = ' ';
+      var jscode = bulidjscode();
+      jscode = js_beautify(jscode, tabsize, tabchar);
+      var buildObject = {
+          htmlcode: htmlcode,
+          jscode: "export default " + jscode
+      };
+      return buildObject;
+  }
+
+  function loadjscode(jscode) {
+      eventdatafunction = {};
+      formData = {};
+      jsobject = {
+          data() {
+              return {}
+          }, methods: {}
+      }
+      if (jscode != undefined && jscode != "") {
+          jsobject = eval("(" + jscode.replace('export default', '') + ")");
+          formData = Object.assign(jsobject.data().formData);
+          eventdatafunction = Object.assign(jsobject.methods)
+      }
+  }
+
+  function bulidjscode() {
+      var jscode = "";
+      var newjsdata = Object.assign(jsobject.data());
+      newjsdata["formData"] = formData;
+      var methodseventfunction = "";
+      for (var key in eventdatafunction) {
+          methodseventfunction = methodseventfunction == "" ? eventdatafunction[key].toString() : methodseventfunction + "," + eventdatafunction[key].toString();
+      }
+      jscode = jscode + "{";
+      for (key in jsobject) {
+          if (key == "data" && typeof (jsobject[key]) == "function") {
+              jscode = jscode + " data(){ return " + JSON.stringify(newjsdata) + "} ";
+          } else if (typeof (jsobject[key]) == "function") {
+              jscode = jscode + "," + jsobject[key].toString();
+          } else if (key == "methods" && typeof (jsobject[key]) == "object") {
+              jscode = jscode + "," + " methods:{" + methodseventfunction + "} ";
+          } else if (typeof (jsobject[key]) == "object") {
+              jscode = jscode + "," + " " + key + ":{" + bulidobject(jsobject[key]) + "} ";
+          } else {
+              jscode = jscode + "," + " " + key + ":'" + jsobject[key].replace("\"" / g, "\\\"") + "'";
+          }
+      }
+      jscode = jscode + "}";
+      return jscode;
+  }
+
+  function bulidobject(obj) {
+      var jscode = "{";
+      for (key in obj) {
+          if (typeof (jsobject[key]) == "function") {
+              jscode = jscode + ", " + jsobject[key].toString();
+          } else if (typeof (jsobject[key]) == "object") {
+              jscode = jscode + ", " + key + ":{" + bulidobject(jsobject[key]) + "}";
+          } else {
+              jscode = jscode + ", " + key + ":'" + jsobject[key].replace("\"" / g, "\\\"") + "'";
+          }
+      }
+      jscode = jscode + "}";
+      return jscode
+  }
+
+  function innerLabelSpan(options) {
+      return Math.round(
+          (parseInt(options.labelSpan) /
+              (parseInt(options.labelSpan) +
+                  parseInt(options.ctrlSpan))) *
+          24
+      )
+  }
+
+  function innerCtrlSpan(options) {
+      return Math.round(
+          (parseInt(options.ctrlSpan) /
+              (parseInt(options.labelSpan) +
+                  parseInt(options.ctrlSpan))) *
+          24
+      )
+  }
+
+  function ctrlSpan(options) {
+      let span = parseInt(
+          options.span === undefined ? 2 : this.element.options.span
+      )
+      if (span === 1) {
+          span = 2
+      }
+      return span * 2
+  }
+
+  function totalSpans(options) {
+      return Math.round(
+          (parseInt(options.labelSpan) +
+              parseInt(options.ctrlSpan)) *
+          2
+      )
+  }
+
+  function getrowcontrolcss(element) {
+      var cssstr = "padding:0px";
+      cssstr = cssstr + (minheight.indexOf(element.type + ',') == 0 ? 'min-height:42px' : '');
+      cssstr = cssstr + dynamicheight.indexOf(element.type + ',') >= 0 ? 'height:auto' : (element.options.rowSpan !== undefined ? "height" + element.options.rowSpan * 42 + 'px' : 'height:auto');
+      return cssstr;
+  }
+
+  function getevent(eventlist) {
+      var eventcode = "";
+      if (eventlist == undefined) {
+          return eventcode;
+      }
+      for (var i = 0; i < eventlist.length; i++) {
+          if (eventlist[i].value != "") {
+              eventcode = eventcode + " @" + eventlist[i].label + '=' + eventlist[i].value + '';
+              if (eventlist[i].value.indexOf("(") < 0) {
+                  if (eventdatafunction[eventlist[i].value] == undefined) {
+                      eventdatafunction[eventlist[i].value] = eventlist[i].value + "() { }";
+                  }
+              } else {
+                  var funname = eventlist[i].value;
+                   funname=funname.substring(0, eventlist[i].value.indexOf("("));
+                  if (eventdatafunction[funname] == undefined) {
+                      var funparamstr = eventlist[i].value.replace(funname + "(", "").replace(")","").split(","); 
+                      var funname = funname + "(";
+                      if (funparamstr[0] != "") {
+                          for (var i = 0; i < funparamstr.length; i++) {
+                              if (i == 0) {
+                                  funname = funname + "param" + i;
+                              } else {
+                                  funname = funname + ",param" + i;
+                              }
+                          }
+                      }
+                     funname= funname+")"
+                     eventdatafunction[funname] =funname + "{ }";
+                  }
+              }
+          }
+      }
+      return eventcode;
+        }
+  ///选人选部门 点击确定事件
+        function addselectorconfirm( filed) {
+         var funname = `selector${filed}confirm`;
+      if (eventdatafunction[funname] == undefined) {
+          eventdatafunction[funname]=funname + `(selectlist) { \r\n this.formData.${filed}.text="";\n\r this.formData.${filed}.value=[]; \n\r for (let i = 0; i < selectlist.length; i++) {
+         this.formData.${filed}.text=this.formData.${filed}.text==""?selectlist[i].Name:this.formData.${filed}.text+";"+selectlist[i].Name;\n\r  this.formData.${filed}.value.push(selectlist[i]);\n\r
+        }\n\r
+this.$refs.${filed}dialog.visible = false;\n\r
+}\n\r`;
+            }
+            return "";
+  }
+  //生成fromdata 结构
+        function setfromData(options, type) {
+      if (type == "listview") {
+          if (options.controlId != undefined) {
+              if (formData[options.controlId] == undefined) {
+                  formData[options.controlId] = {}
+                  formData[options.controlId]["queryparam"] = {}
+                  formData[options.controlId]["scopedSlots"] = []
+              }
+          }
+      }else if (type == "wmpDetail") {
+          if (options.controlId != undefined) {
+              if (formData[options.controlId] == undefined) {
+                  formData[options.controlId] = []
+              }
+          }
+      } else if ("user,department,project,cost,choose".indexOf(type) >= 0) {
+          if (options.filed != undefined) {
+              if (formData[options.filed] == undefined) {
+                  formData[options.filed] = {text:"",value:[]}
+              }
+          }
+      } else {
+          if (options.filed != undefined) {
+              if (options.defaultValue != undefined) {
+                  formData[options.filed] = options.defaultValue;
+              } else {
+                  formData[options.filed] = "";
+              }
+          }
+      }
+      return "";
+  }
+    </script>
+</body>
+
+</html>
