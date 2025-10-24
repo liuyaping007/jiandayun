@@ -2,9 +2,9 @@
 仓库代码地址：
 
 【 [码云仓库](https://gitee.com/liuyaping007/vuefrom1.1.0)】
-【 [文档地址](http://qifeng.321zou.com)】
+【 [文档地址](http://doc.kyform.cn)】
 
-【 [体验地址](http://qifeng.321zou.com:81) 用户名：liuyaping 密码：123456】
+【 [体验地址](http://kyform.cn) 租户：简搭云 用户名：admin 密码：123456】
 
 【 [博客网站地址](https://www.cnblogs.com/PlatformSolution/p/14572362.html)】
 
