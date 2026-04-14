@@ -98,11 +98,13 @@
 
 仓库代码地址：
 
-【 [码云仓库](https://gitee.com/liuyaping007/vuefrom1.1.0)】
+【 [码云仓库](https://gitee.com/kyform/vuefrom1.1.0)】
+
+【 [github](https://github.com/liuyaping007/jiandayun)】
 
 【 [文档地址](http://doc.kyform.cn/)】
 
-【 [体验地址](http://kyform.cn/) 用户名：admin 密码：123456】
+【 [体验地址](https://kyform.cn/) 用户名：admin 密码：123456  租户：测试租户】
 
 ### 🏆安装教程 
 
