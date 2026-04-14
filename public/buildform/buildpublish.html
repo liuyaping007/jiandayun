@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>简搭云科技有限公司</title>
+  <script src="jquery-1.7.2.min.js" type="text/javascript"></script>
+  <script src="jquery.tmpl.js" type="text/javascript"></script>
+  <script src="../license.js"></script>
+  <script src="../kylinjson.js" type="text/javascript"></script>
+  <script src="./buildfrom.js" type="text/javascript"></script>
+  <!-- <script src="./vuetemp.js" type="text/javascript"></script> -->
+</head>
+
+<body>
+  <div id="fromhtml"></div>
+  <script id="miantmpl" type="type/x-jquery-tmpl">
+      <template>
+        <div id="mianformplane">
+          <el-form ref="elForm" :model="formData" :rules="rules" size="medium" label-width="100px">
+             {{each ctrls}}
+                {{if type === 'gridPanel'}}
+                {{tmpl(options) '#formplane'}}
+                {{else type === 'tabs'}}
+                  <el-tabs >
+                     {{each options.planelist}}
+                    <el-tab-pane
+                      label="${title}" >
+                      <span slot="label" class="tab-title"
+                        ><i class="${icon}"></i>${ title }
+                      </span>
+                        {{tmpl($value) '#formplane'}}
+                    </el-tab-pane>
+                    {{/each}}
+                  </el-tabs>
+                {{else type === 'collapse'}}
+                <el-collapse>
+                   {{each options.planelist}}
+                <el-collapse-item
+                  label="${title}"
+                >
+                  <span slot="title" class="collapse-title">
+                  <i class="${icon}"></i>${ title }
+                  </span>
+                  {{tmpl($value) '#formplane'}}
+                </el-collapse-item>
+                {{/each}}
+              </el-collapse>
+               {{else type === 'layouttable'}}
+                 <div class="layouttable">
+                  <div class="layouttable-row">
+                    {{each options.planelist}}
+                      <div class="layouttable-item" style="--pcwith:${scalewidth}%;--ipadwith:${ipadscalewidth}%;--mobilewith:${phonescalewidth}%">
+                          {{tmpl($value) '#formplane'}}
+                      </div>
+                    {{/each}}
+                  </div>
+                </div>
+               {{/if}}
+             {{/each}}
+          </el-form>
+          <div align="center"> <el-button type="primary" @click="testsubmitData_sys()">获取提交表单数据</el-button> </div>
+          <input  class="file" type="file" ref="fileExcel" accept=".xls,.xlsx" style="display: none"  @change="commonimport_sys($event)" />
+        </div>
+       </template>
+    </script>
+  <script id="formplane" type="type/x-jquery-tmpl">
+      <formplane  title="${title}" icon="${icon}" :istitle="${$data.istitle===undefined?false:$data.istitle}">
+         {{each columns}}
+             {{tmpl($value) '#basefrom'}}
+         {{/each}}
+      </formplane>
+    </script>
+
+  <script id="basefrom" type="type/x-jquery-tmpl">
+       ${buildcodeObj.setfromData(options,type,options.title,$data)}
+      <el-col :lg="${options.lg===undefined?24:options.lg}" :md="${options.md===undefined?24:options.md}" :xs="${options.xs===undefined?24:options.xs}" >
+        {{if type=="imgage"}}
+          <el-image
+           src="${options.defaultValue}"
+           style="${getimagecss()}"
+           title="${options.describe}"
+         >
+           <div slot="error" class="image-slot">
+             <i class="el-icon-picture-outline"></i>
+           </div>
+         </el-image>
+        {{else type=="gridlist"}}
+        {{tmpl($data) '#gridlist'}}
+        {{else type=="listview"}}
+           {{tmpl($data) '#listviewPCcodetmpl'}}
+          {{tmpl($data) '#listviewMobilecodetmpl'}}
+        {{else type=="upFilesComp"}}
+           {{if options.uptype == 'file'}}
+           <upfilescomp ></upfilescomp>
+           {{else options.uptype == 'img'}}
+           <upimgcomp ></upimgcomp>
+           {{else options.uptype == 'arryimg'}}
+           <upmanyimgcomp ></upmanyimgcomp>
+           {{/if}}
+        {{else type=="carouselimg"}}
+           <el-carousel
+           indicator-position="outside"
+         >
+           {{each options.imglist}}
+           <el-carousel-item>
+             <img src="${$value}" style="width: 100%;height: 100%;" />
+           </el-carousel-item>
+           {{/each}}
+         </el-carousel>
+        {{else type=="button"}}
+          {{each options.buttons}}
+                     <el-button
+                       type="${options.butType}"
+                       style="margin-right:10px"
+                       size="${options.butsize}"
+                       icon="${options.icon}"
+                       {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}
+                       >${ options.title }</el-button
+                     >
+         {{/each}}
+        {{else type!="hidden"}}
+        <div class="ctrltitle" :class="${options.istitle===true}=== false ? 'ishidetitle' : ''">
+         <div class="ctrl-title">${options.title}</div>
+         <div class="ctrl-content">
+        {{if type=="fromlable"}}
+            <fromlable :filed="formData.${options.filed}" titlecolor="${options.titlecolor}" {{html options.tagattr}}></fromlable>
+        {{else type=="autonumber"}}
+            <autono ref="autono${options.filed}" BusinessMoudle="${options.BusinessMoudle}" BusinessModuleID="${options.BusinessModuleID}" :modelcode.sync="formData.${options.filed}" {{html options.tagattr}}></autono>
+        {{else type=="datarelevance"}}
+          <datarelevance :filedlist="controlData.${options.filed}" :queryparam="queryparam${options.filed}_sys" @selected="assign${options.filed}_sys" :dataid.sync="formData.${options.filed}" :datalable.sync="formData.${options.filed}_text"  :apicode="'${options.sourceApi}'" title="${options.title}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}></datarelevance>
+        {{else type=="cityselector"}}
+            <cityselector v-model="formData.${options.filed}" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" {{html options.tagattr}}></cityselector>
+        {{else type=="input"}}
+          <el-input placeholder="请输入${ options.title}内容" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="formData.${options.filed}" maxlength="${options.dataLength}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}></el-input>
+        {{else type=="textarea"}}
+         <el-input type="textarea"
+                           rows="${options.rows}"
+                           placeholder="请输入${ options.title }内容" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="formData.${options.filed}" maxlength="${options.dataLength}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}>
+                 </el-input>
+        {{else type=="switch"}}
+          <el-switch
+                     v-model="formData.${options.filed}"
+                     active-color="${options.activecolor}"
+                     inactive-color="${options.inactivecolor}"
+                     :disabled="${options.disabled}||!(writeDataPermission.${model}===true)"
+                   >
+                   </el-switch>
+        {{else type=="slider"}}
+          <el-slider
+                 v-model="formData.${options.filed}"
+                ${options.range?"range":""}
+                 :max="${options.max}"
+                 :min="${options.min}"
+                 :step="${options.step}"
+               >
+               </el-slider>
+        {{else type=="colorpicker"}}
+             <el-color-picker
+       v-model="formData.${options.filed}"
+       :disabled="${options.disabled}||!(writeDataPermission.${model}===true)"
+       size="${options.butsize}"
+       >
+       </el-color-picker>
+        {{else type=="avatar"}}
+        {{else type=="occupy"}}
+        &nbsp;
+        {{else type=="divider"}}
+        <el-divider content-position="${options.contentposition}">${ options.defaultValue }</el-divider>
+        {{else type=="iconselect"}}
+           <iconselect :iconclass.sync="formData.${options.filed}"></iconselect>
+        {{else type=="fromlink"}}
+           <el-link type="${options.linktype}" href="${options.defaultValue}" target="${options.target}" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" :underline="${options.underline}" icon="${options.icon}">${options.title}</el-link>
+        {{else type=="barcode"}}
+            <barcode :code="formData.${options.filed}" :h="${options.h}"></barcode>
+          {{else type=="qrcode"}}
+                <qrcode :code="formData.${options.filed}" :h="${options.h}" :w="${options.w}" colorDark="${options.colorDark}" colorLight="${options.colorLight}"></qrcode>
+        {{else type=="describe"}}
+          ${ options.defaultValue }
+        {{else type=="radio"}}
+             <el-radio-group size="mini"
+                         style="line-height:43px; display:block;" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="formData.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}>
+                           {{if options.isRemote==true}}
+                           ${buildcodeObj.validatecotrl(options,options.title,type)}
+                           <el-radio  v-for="(item,index) in ${options.filed}where_sys()" :key="index"
+                             :label="item.${options.labelValue}"
+                             :value="item.${options.labelValue}">
+                           </el-radio>
+                           {{else}}
+                           <el-radio  v-for="(item,index) in controlData.${options.filed}" :key="index"
+                           :label="item"
+                           :value="item">
+                           </el-radio>
+                           {{/if}}
+         </el-radio-group>
+        {{else type=="checkbox"}}
+           <el-checkbox-group size="mini"
+                            style="line-height:43px;" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="formData.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}>
+                 {{if options.isRemote==true}}
+                   ${buildcodeObj.validatecotrl(options,options.title,type)}
+                     <el-checkbox  v-for="(item,index) in ${options.filed}where_sys()" :key="index"
+                       :label="item.${options.labelValue}"
+                       :value="item.${options.labelValue}">
+                     </el-checkbox>
+                 {{else}}
+                 <el-checkbox  v-for="(item,index) in controlData.${options.filed}" :key="index"
+                 :label="item"
+                 :value="item">
+                  </el-checkbox>
+                 {{/if}}
+         </el-checkbox-group>
+        {{else type=="signname"}}
+            <signname :vheight="${options.height}" :signimg.sync="formData.${options.filed}"  {{html options.tagattr}}/>
+        {{else type=="locationmap"}}
+          <locationmap :cityaddress="formData.${options.filed}"  {{html options.tagattr}}/>
+        {{else type=="time"}}
+            {{if options.modeltype=="date"}}
+            {{else options.modeltype=="year"||options.modeltype === 'week'||options.modeltype === 'month'}}
+            {{else options.modeltype === 'range'}}
+            {{/if}}
+        {{else type=="select"}}
+           <el-select placeholder="请选择${options.title}" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="formData.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}  style="width: 100%;">
+             {{if options.isRemote==true}}
+                 ${buildcodeObj.validatecotrl(options,options.title,type)}
+                 <el-option  v-for="(item,index) in ${options.filed}where_sys()" :key="index"
+                            :label="item.${options.labelValue}"
+                           :value="item.${options.labelValue}">
+                 </el-option>
+             {{else}}
+                 <el-option  v-for="(item,index) in controlData.${options.filed}" :key="index"
+                 :label="item"
+               :value="item">
+                 </el-option>
+             {{/if}}
+          </el-select>
+        {{else type=="rate"}}
+            <el-rate ${options.readonly?"readonly='true' ":" "}   v-model="formData.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}></el-rate>
+        {{else type=="inputnumber"}}
+              <el-input-number :disabled="${options.disabled}||!(writeDataPermission.${model}===true)"
+                                  ${options.min===0 && options.max===0?':max='+options.max+' :min='+options.min+' ':''}
+                                  label="${options.describe}"
+                                  :step="${options.step}"
+                                  :precision="${options.precision}" v-model="formData.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}></el-input-number>
+        {{else type=="timepicker"}}
+        {{else type=="user"||type === 'organ'||type === 'department'||type === 'role'}}
+            <selector :typemode="${options.typemode}" :checklisted.sync="formData.${options.filed}" :ismulti="${options.isMulty}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}></selector>
+        {{else type=="editor"}}
+              <editor ref="${options.filed}"
+                         :value.sync="formData.${options.filed}"></editor>
+        {{else type=="component"}}
+          {{html options.component}}
+        {{/if}}
+          </div>
+        </div>
+        {{/if}}
+       </el-col>
+    </script>
+  <script id="gridlist" type="type/x-jquery-tmpl">
+      <el-col :xs="24" :md="24" :lg="24"  >
+           <el-button style="margin-left:5px;margin-top: 5px;" type="text" :plain="false" size="mini" icon="el-icon-circle-plus"  :round="false" :circle="false" :disabled="false" @click="addGridlist_sys('${options.controlId}','${options.fromid}')"  > 新增 </el-button>
+       </el-col>
+       <el-col :span="24">
+         <div class="ant-table_container">
+              <el-table   :data="formData.${options.controlId}"     ref="${options.controlId}"    style="width: 100%"   >
+             {{each options.columns}}
+             ${setCelnum($value,$index)}
+            {{tmpl($value) '#listviewPCDetailcodetmpl'}}
+            {{/each}}
+            <el-table-column prop="operation" fixed="right" label="操作" class-name="" width="120" style=" display: -webkit-flex; display:flex;flex-direction:row-reverse ">
+               <template _tmplitem="8" slot-scope="scope" >
+                                                   <el-button style="margin-left:5px;" type="text" size="small" icon="el-icon-delete" :plain="false" :round="false" :circle="false" :disabled="false" @click="updateGridlist_sys('${options.controlId}','${options.fromid}',scope.row)"> 修改 </el-button>
+                                                   <el-button style="margin-left:5px;" type="text" size="small" icon="el-icon-delete" :plain="false" :round="false" :circle="false" :disabled="false" @click="delGridlist_sys('${options.controlId}',scope.row)"> 删除 </el-button>
+
+               </template>
+               </el-table-column>
+          </el-table>
+         </div>
+       </el-col>
+    </script>
+  <!-- 手机端 明细列表渲染 -->
+  <script id="listviewMobilecodetmpl" type="type/x-jquery-tmpl">
+      <div v-if="readDataPermission.${model}!==false"> <el-col :span="24" v-if="deviceMode==='Mobile'" >
+              <div   v-for="(rowitem,index) in formData.${options.controlId}"  :key="index" style="width: 98%;padding: 8px;margin-bottom: 10px;
+              border: 1px solid #d7dae2;
+              border-radius: 0;    position: relative;">
+              <div class="fr-card-index">${"{{index+1"}}} </div>
+              <div :span="24" style="text-align: right;"> <el-button style="margin-left:5px;margin-top: 5px;" type="text" :plain="false" size="mini" icon="el-icon-delete"  :round="false" :circle="false" :disabled="false" @click="delListViewRow_sys('${options.controlId}',rowitem)"  > 删除</el-button> </div>
+              {{each options.columns}}
+                {{tmpl($value) '#listviewMobileDetailcodetmpl'}}
+             {{/each}}
+              <div  style="clear:both;height:0;font-size: 1px;line-height: 0px;"></div>
+              </div>
+             <el-col :xs="24" :md="24" :lg="24"  style="    text-align: center;">
+              <el-button style="margin-left:5px;margin-top: 5px;    width: 95%;" type="text" :plain="false" size="mini" icon="el-icon-circle-plus"  :round="false" :circle="false" :disabled="false" @click="addListViewRow_sys('${options.controlId}')"  > 新增${options.title } </el-button>
+            </el-col>
+         </el-col>
+      </div>
+    </script>
+  <!-- PC端明细列表渲染 -->
+  <script id="listviewPCcodetmpl" type="type/x-jquery-tmpl">
+      <div v-if="readDataPermission.${model}!==false">
+          <el-col :xs="24" :md="24" :lg="24"  v-if="deviceMode!=='Mobile'" >
+              <el-button style="margin-left:5px;margin-top: 5px;" type="text" :plain="false" size="mini" icon="el-icon-circle-plus"  :round="false" :circle="false" :disabled="false" @click="addListViewRow_sys('${options.controlId}')"  > 新增 </el-button>
+              <jsonexcel
+                class="export-excel-wrapper"
+                :data="exportexcel.DetailsForm"
+                :fields="exportexcel.json_fields"
+                :header="exportexcel.title"
+                :name="exportexcel.title + '.xls'"
+              >
+               <el-button style="margin-left:5px;margin-top: 5px;" type="text" :plain="false" size="mini" icon="el-icon-circle-plus"  :round="false" :circle="false" :disabled="false" @click="exportListView_sys('${options.controlId}','${options.title}')"  > 导出xls </el-button>
+               </jsonexcel>
+               <el-button style="margin-left:5px;margin-top: 5px;" type="text" :plain="false" size="mini" icon="el-icon-circle-plus"  :round="false" :circle="false" :disabled="false" @click="importListView_sys('${options.controlId}','${options.title}')"  > 导入xls </el-button>
+          </el-col>
+          <el-col :span="24"  v-if="deviceMode!=='Mobile'">
+            <div class="ant-table_container">
+              ${setGridCtrl($data)}
+             <el-table   :data="formData.${options.controlId}"     ref="${options.controlId}"    style="width: 100%"  @row-click="${options.controlId.trim()}rowclick_sys"  >
+                {{each options.columns}}
+                ${setlistviewCelnum($value,$index)}
+                {{tmpl($value) '#listviewPCDetailcodetmpl'}}
+               {{/each}}
+               <el-table-column prop="operation" fixed="right" label="操作" class-name="" width="100">
+                  <template _tmplitem="8" slot-scope="scope">
+                                                  <div _tmplitem="8" class="el-input el-input--small">
+                                                      <el-button style="margin-left:5px;" type="text" size="small" icon="el-icon-delete" :plain="false" :round="false" :circle="false" :disabled="false" @click="delListViewRow_sys('${options.controlId}',scope.row)"> 删除 </el-button>
+                                                  </div>
+
+                  </template>
+                  </el-table-column>
+             </el-table>
+            </div>    </el-col>
+          </div>
+    </script>
+  <!-- PC端明细列表具体字段渲染 -->
+  <script id="listviewPCDetailcodetmpl" type="type/x-jquery-tmpl">
+      {{if  type=="queryrelevance"||  type=="operatedata"|| type=="hidden"}}
+      ${buildcodeObj.validatecotrl(options,options.title,type)}
+      {{else}}
+              <el-table-column prop="${options.filed}"
+                               label="${options.title}" class-name="${ options.required == true?" required":"" }"  ${options.labelwidth===''||options.labelwidth===0?'':'width='+options.labelwidth}  {{html options.parenttagattr}}>
+                  <template slot-scope="scope">
+                      <el-form-item   label-width="0px"
+                       :prop="'${buildcodeObj.getParentControlId($data)}.'+scope.$index+'.${options.filed}'"  :rules="rules.${options.filed}"  >
+                          {{tmpl($data) '#wmpDetailControltmpl'}}
+                      </el-form-item>
+                  </template>
+              </el-table-column>
+              {{/if}}
+    </script>
+  <!-- 手机端明细列表具体字段渲染 -->
+  <script id="listviewMobileDetailcodetmpl" type="type/x-jquery-tmpl">
+              {{if  type!="hidden"}}  <el-col :span="24"
+              style="padding:0px">
+          <el-col :span="24"
+
+                  style="${'height:'+(options.rowSpan !== undefined? 42 * options.rowSpan + 'px': '')}">
+
+              <el-form-item label="${options.title }" label-width="${options.title==''?'0':options.labelwidth}px"  :prop="'${buildcodeObj.getParentControlId($data)}.'+index+'.${options.filed}'"  :rules="rules.${options.filed}"  >
+                  {{tmpl($data) '#listviewMobileControltmpl'}}
+              </el-form-item>
+          </el-col>
+      </el-col>
+      {{/if}}
+    </script>
+  <script id="listviewMobileControltmpl" type="type/x-jquery-tmpl">
+              {{if  type=="input"}}
+              <el-input placeholder="请输入${ options.title }内容" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="rowitem.${options.filed}" maxlength="${options.dataLength}"  {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}}></el-input>
+             {{else type == 'textarea'}}
+              <el-input type="textarea"
+                        rows="2"
+                        placeholder="请输入${ options.title }内容" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="rowitem.${options.filed}" maxlength="${options.dataLength}"  {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}}>
+              </el-input>
+              {{else type == 'select'}}
+          <el-select placeholder="请选择${ options.title}" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="rowitem.${options.filed}"  {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}}>
+              {{if options.isRemote==true}}
+              ${buildcodeObj.validatecotrl(options,options.title,type)}
+                <el-option  v-for="(item,index) in  ${options.filed}where_sys(rowitem)" :key="index"
+                             :label="item.${options.labelValue}"
+                            :value="item.${options.labelValue}">
+                  </el-option>
+              {{else}}
+              <el-option  v-for="(item,index) in controlData.${options.filed}" :key="index"
+              :label="item"
+             :value="item">
+      </el-option>
+              {{/if}}
+          </el-select>
+              {{else type == 'date'}}
+              {{if options.modeltype == 'date'}}
+               <el-date-picker placeholder="${options.placeholder}"
+                                  format="${options.format}"
+                                  value-format="${options.format}"
+                                  type="${options.modeltype}"
+                                  :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="rowitem.${options.filed}"  {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}} />
+                  {{else options.modeltype == 'range'}}
+                 <el-date-picker
+                  v-model="rowitem.${options.filed}"
+                  format="${options.format}"
+                  value-format="${options.format}"
+                  type="daterange"
+                  range-separator="至"
+                  start-placeholder="${options.placeholder}"
+                  end-placeholder="${options.placeholder}"  {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}} :disabled="${options.disabled}||!(writeDataPermission.${model}===true)">
+                </el-date-picker>
+                {{else}}
+                <el-date-picker placeholder="${options.placeholder}"
+                format="${options.format}"
+                value-format="${options.format}"
+                type="${options.modeltype}"
+                :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="rowitem.${options.filed}"  {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}} />
+                  {{/if}}
+              {{else type == 'radio'}}
+              <el-radio-group size="mini"
+                              style="line-height:43px; display:block;" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="rowitem.${options.filed}"  {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}}>
+                 {{if options.isRemote==true}}
+                 ${buildcodeObj.validatecotrl(options,options.title,type)}
+      <el-radio  v-for="(item,index) in ${options.filed}where_sys(rowitem)" :key="index"
+         :label="item.${options.labelValue}"
+        :value="item.${options.labelValue}">
+      </el-radio>
+      {{else}}
+      <el-radio  v-for="(item,index) in controlData.${options.filed}" :key="index"
+      :label="item"
+      :value="item">
+      </el-radio>
+      {{/if}}
+              </el-radio-group>
+              {{else type == 'checkbox'}}
+              <el-checkbox-group size="mini"
+                                 style="line-height:43px;" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="rowitem.${options.filed}"  {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}}>
+                 {{if options.isRemote==true}}
+                 ${buildcodeObj.validatecotrl(options,options.title,type)}
+      <el-checkbox  v-for="(item,index) in ${options.filed}where_sys(rowitem)" :key="index"
+         :label="item.${options.labelValue}"
+        :value="item.${options.labelValue}">
+      </el-checkbox>
+               {{else}}
+               <el-checkbox  v-for="(item,index) in controlData.${options.filed}" :key="index"
+               :label="item"
+              :value="item">
+            </el-checkbox>
+              {{/if}}
+              </el-checkbox-group>
+      {{else type == 'switch'}}
+      <el-switch
+      v-model="rowitem.${options.filed}"
+      active-color="${options.activecolor}"
+      inactive-color="${options.inactivecolor}"
+      :disabled="${options.disabled}||!(writeDataPermission.${model}===true)"
+      >
+      </el-switch>
+      {{else type == 'colorpicker'}}
+      <el-color-picker
+      v-model="rowitem.${options.filed}"
+      :disabled="${options.disabled}||!(writeDataPermission.${model}===true)"
+      size="${options.butsize}"
+      >
+      </el-color-picker>
+      {{else type == 'slider'}}
+      <el-slider
+      v-model="rowitem.${options.filed}"
+      ${options.range?"range":""}
+      :max="${options.max}"
+      :min="${options.min}"
+      :step="${options.step}"
+      >
+      </el-slider>
+      {{else type == 'upFilesComp'}}
+      {{if options.uptype =='file'}}
+      <upfilescomp :filelistarr.sync="rowitem.${options.filed}"></upfilescomp>
+      {{else options.uptype =='img'}}
+      <upmanyimgcomp  :filelistarr.sync="rowitem.${options.filed}" :limit="1"></upmanyimgcomp>
+      {{else options.uptype =='arryimg'}}
+      <upmanyimgcomp :filelistarr.sync="rowitem.${options.filed}"
+      ></upmanyimgcomp>
+      {{/if}}
+              {{else type == 'rate'}}
+              <el-rate ${options.readonly?"readonly='true' ":" "} v-model="rowitem.${options.filed}"  {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}}></el-rate>
+              {{else type == 'inputnumber'}}
+              <el-input-number :disabled="${options.disabled}||!(writeDataPermission.${model}===true)"
+                              ${options.min===0&&options.max===0?':max='+options.max+' :min='+options.min+' ':''}
+                               label="${options.describe}"
+                               :step="${options.step}"
+                               :precision="${options.precision}" v-model="rowitem.${options.filed}"  {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}}></el-input-number>
+              {{else type == 'timepicker'}}
+              <a-time-picker use12-hours
+                             format="${options.timeformat}"
+                             :disabled="${options.disabled}||!(writeDataPermission.${model}===true)"
+                             :minuteStep="${options.minute}"
+                             :secondStep="${options.second}" v-model="rowitem.${options.filed}"  {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}} />
+
+             {{else type == 'fromlable'}}
+                             <fromlable :filed="rowitem.${options.filed}" titlecolor="${options.titlecolor}" {{html options.tagattr}}></fromlable>
+             {{else type == 'customComponent'}}
+             {{html options.component}}
+            {{else type == 'autonumber'}}
+                             <autono  ref="autono${options.filed}" :modelcode.sync="rowitem.${options.filed}" BusinessMoudle="${options.BusinessMoudle}" BusinessModuleID="${options.BusinessModuleID}"  {{html options.tagattr}}></autono>
+             {{else type == 'datarelevance'}}
+             ${buildcodeObj.validatecotrl(options,options.title,type)}
+             <datarelevance :filedlist="controlData.${options.filed}" :queryparam="queryparam${options.filed}_sys" @selected="assign${options.filed}_sys" :dataid.sync="rowitem.${options.filed}" :apicode="'${options.sourceApi}'" :datalable.sync="rowitem.${options.filed}_text" title="${options.title}" :datarow="rowitem"   {{html buildcodeObj.buildEvent($data,true)}}  {{html options.tagattr}}></datarelevance>
+              {{else type == 'cityselector'}}
+                             <cityselector v-model="rowitem.${options.filed}" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" {{html options.tagattr}}></cityselector>
+              {{else type == 'user'||type == 'organ'||type == 'department'||type == 'role'}}
+                           <selector :checklisted.sync="rowitem.${options.filed}" :typemode="${options.typemode}" :ismulti="${options.isMulty}"   {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}}></selector>
+              {{else  type == 'button' }}
+              {{each options.buttons}}
+          <el-button style="margin-left:5px;"    {{html buildcodeObj.buildEvent($data,true)}} {{html options.tagattr}}   type="${options.butType}"
+        size="${options.butsize}"
+        icon="${options.icon}" :plain="${options.isplain}"
+      :round="${options.isround}"
+      :circle="${options.iscircle}"
+      :disabled="${options.disabled}">
+              ${options.title}
+          </el-button>
+              {{/each}}
+              {{/if}}
+    </script>
+  <script id="wmpDetailControltmpl" type="type/x-jquery-tmpl">
+              {{if  type=="input"}}
+              <el-input placeholder="请输入${ options.title }内容" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="scope.row.${options.filed}" maxlength="${options.dataLength}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}></el-input>
+             {{else type == 'textarea'}}
+              <el-input type="textarea"
+                        rows="2"
+                        placeholder="请输入${ options.title }内容" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="scope.row.${options.filed}" maxlength="${options.dataLength}" {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}>
+              </el-input>
+              {{else type == 'select'}}
+          <el-select placeholder="请选择${  options.title}" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="scope.row.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}>
+              {{if options.isRemote==true}}
+              ${buildcodeObj.validatecotrl(options, options.title,type)}
+                <el-option  v-for="(item,index) in ${options.filed}where_sys(scope.row)" :key="index"
+                             :label="item.${options.labelValue}"
+                            :value="item.${options.labelValue}">
+                  </el-option>
+              {{else}}
+              <el-option  v-for="(item,index) in controlData.${options.filed}" :key="index"
+              :label="item"
+             :value="item">
+      </el-option>
+              {{/if}}
+          </el-select>
+              {{else type == 'date'}}
+              {{if options.modeltype == 'date'}}
+               <el-date-picker placeholder="${options.placeholder}"
+                                  format="${options.format}"
+                                  value-format="${options.format}"
+                                  type="${options.modeltype}"
+                                  :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="scope.row.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}} />
+                  {{else options.modeltype == 'range'}}
+                 <el-date-picker
+                  v-model="scope.row.${options.filed}"
+                  format="${options.format}"
+                  value-format="${options.format}"
+                  type="daterange"
+                  range-separator="至"
+                  start-placeholder="${options.placeholder}"
+                  end-placeholder="${options.placeholder}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}} :disabled="${options.disabled}||!(writeDataPermission.${model}===true)">
+                </el-date-picker>
+                {{else}}
+                <el-date-picker placeholder="${options.placeholder}"
+                format="${options.format}"
+                value-format="${options.format}"
+                type="${options.modeltype}"
+                :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="scope.row.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}} />
+                  {{/if}}
+              {{else type == 'radio'}}
+              <el-radio-group size="mini"
+                              style="line-height:43px; display:block;" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="scope.row.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}>
+                 {{if options.isRemote==true}}
+                 ${buildcodeObj.validatecotrl(options, options.title,type)}
+      <el-radio  v-for="(item,index) in ${options.filed}where_sys(scope.row)" :key="index"
+         :label="item.${options.labelValue}"
+        :value="item.${options.labelValue}">
+      </el-radio>
+      {{else}}
+      <el-radio  v-for="(item,index) in controlData.${options.filed}" :key="index"
+      :label="item"
+      :value="item">
+      </el-radio>
+      {{/if}}
+              </el-radio-group>
+              {{else type == 'checkbox'}}
+              <el-checkbox-group size="mini"
+                                 style="line-height:43px;" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" v-model="scope.row.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}>
+                 {{if options.isRemote==true}}
+                 ${buildcodeObj.validatecotrl(options, options.title,type)}
+      <el-checkbox  v-for="(item,index) in ${options.filed}where_sys(scope.row)" :key="index"
+         :label="item.${options.labelValue}"
+        :value="item.${options.labelValue}">
+      </el-checkbox>
+               {{else}}
+               <el-checkbox  v-for="(item,index) in controlData.${options.filed}" :key="index"
+               :label="item"
+              :value="item">
+            </el-checkbox>
+              {{/if}}
+              </el-checkbox-group>
+      {{else type == 'switch'}}
+      <el-switch
+      v-model="scope.row.${options.filed}"
+      active-color="${options.activecolor}"
+      inactive-color="${options.inactivecolor}"
+      :disabled="${options.disabled}||!(writeDataPermission.${model}===true)"
+      >
+      </el-switch>
+      {{else type == 'colorpicker'}}
+      <el-color-picker
+      v-model="scope.row.${options.filed}"
+      :disabled="${options.disabled}||!(writeDataPermission.${model}===true)"
+      size="${options.butsize}"
+      >
+      </el-color-picker>
+      {{else type == 'slider'}}
+      <el-slider
+      v-model="scope.row.${options.filed}"
+      ${options.range?"range":""}
+      :max="${options.max}"
+      :min="${options.min}"
+      :step="${options.step}"
+      >
+      </el-slider>
+      {{else type == 'upFilesComp'}}
+      {{if options.uptype =='file'}}
+      <upfilescomp :filelistarr.sync="scope.row.${options.filed}"></upfilescomp>
+      {{else options.uptype =='img'}}
+      <upmanyimgcomp  :filelistarr.sync="scope.row.${options.filed}" :limit="1"></upmanyimgcomp>
+      {{else options.uptype =='arryimg'}}
+      <upmanyimgcomp :filelistarr.sync="scope.row.${options.filed}"
+      ></upmanyimgcomp>
+      {{/if}}
+              {{else type == 'rate'}}
+              <el-rate ${options.readonly?"readonly='true' ":" "} v-model="scope.row.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}></el-rate>
+              {{else type == 'inputnumber'}}
+              <el-input-number :disabled="${options.disabled}||!(writeDataPermission.${model}===true)"
+                              ${options.min===0&&options.max===0?':max='+options.max+' :min='+options.min+' ':''}
+                               label="${options.describe}"
+                               :step="${options.step}"
+                               :precision="${options.precision}" v-model="scope.row.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}></el-input-number>
+              {{else type == 'timepicker'}}
+              <a-time-picker use12-hours
+                             format="${options.timeformat}"
+                             :disabled="${options.disabled}||!(writeDataPermission.${model}===true)"
+                             :minuteStep="${options.minute}"
+                             :secondStep="${options.second}" v-model="scope.row.${options.filed}"  {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}} />
+
+             {{else type == 'fromlable'}}
+                             <fromlable :filed="scope.row.${options.filed}" titlecolor="${options.titlecolor}" {{html options.tagattr}}></fromlable>
+             {{else type == 'customComponent'}}
+             {{html options.component}}
+            {{else type == 'autonumber'}}
+                             <autono  ref="autono${options.filed}" :modelcode.sync="scope.row.${options.filed}" BusinessMoudle="${options.BusinessMoudle}" BusinessModuleID="${options.BusinessModuleID}"  {{html options.tagattr}}></autono>
+             {{else type == 'datarelevance'}}
+             ${buildcodeObj.validatecotrl(options, options.title,type)}
+             <datarelevance :filedlist="controlData.${options.filed}" :queryparam="queryparam${options.filed}_sys" @selected="assign${options.filed}_sys" :dataid.sync="scope.row.${options.filed}" :apicode="'${options.sourceApi}'" :datalable.sync="scope.row.${options.filed}_text" title="${ options.title}" :datarow="scope.row" {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}></datarelevance>
+              {{else type == 'cityselector'}}
+                             <cityselector v-model="scope.row.${options.filed}" :disabled="${options.disabled}||!(writeDataPermission.${model}===true)" {{html options.tagattr}}></cityselector>
+              {{else type == 'user'||type == 'organ'||type == 'department'||type == 'role'}}
+                           <selector :checklisted.sync="scope.row.${options.filed}" :typemode="${options.typemode}" :ismulti="${options.isMulty}" {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}></selector>
+              {{else  type == 'button' }}
+              {{each options.buttons}}
+          <el-button style="margin-left:5px;"    {{html buildcodeObj.buildEvent($data)}} {{html options.tagattr}}   type="${options.butType}"
+        size="${options.butsize}"
+        icon="${options.icon}" :plain="${options.isplain}"
+      :round="${options.isround}"
+      :circle="${options.iscircle}"
+      :disabled="${options.disabled}">
+              ${options.title}
+          </el-button>
+              {{/each}}
+              {{/if}}
+    </script>
+  <style id="commoncss">
+    .fr-card-index {
+      position: absolute;
+      padding-left: 4px;
+      padding-right: 6px;
+      border-bottom-right-radius: 8px;
+      border-top-left-radius: 3px;
+      background-color: rgba(0, 0, 0, 0.36);
+      font-size: 8px;
+      color: #fff;
+    }
+
+    .border-title {
+      font-size: 16px !important;
+      margin-bottom: 5px;
+    }
+
+    .required:before {
+      content: '*';
+      color: #c80000;
+      font-size: 12px;
+      vertical-align: top;
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      top: 2px;
+      position: absolute;
+    }
+
+    .el-input__inner {
+      height: 35px;
+      line-height: 35px;
+    }
+
+    .filterbottom {
+      margin-top: 8px;
+      margin-left: 15px;
+      margin-right: 10px;
+    }
+
+    .filterbottom button {
+      float: right;
+      margin-right: 10px;
+      margin-bottom: 20px;
+    }
+
+    @media screen and (min-width: 1024px) {
+      .maincontent {
+        margin-left: calc((100% - 1024px) / 2);
+      }
+    }
+
+    @media screen and (max-width: 1024px) {
+      .el-radio {
+        width: 100%;
+      }
+
+      .el-checkbox {
+        width: 100%;
+      }
+
+      .buttongroup {
+        width: 100%;
+      }
+
+      .buttongroup button {
+        width: 50%;
+      }
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px !important;
+      height: 10px !important;
+      -webkit-appearance: none;
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      height: 5px;
+      border: 1px solid transparent;
+      border-top: 0;
+      border-bottom: 0;
+      border-radius: 6px;
+      background-color: #ccc;
+      background-clip: padding-box;
+    }
+
+    .focusState {
+      position: absolute;
+    }
+
+    .mianfromplane[data-v-1fc0fehfff] .cell {
+      display: flex;
+      flex-direction: row;
+      white-space: nowrap;
+    }
+
+    .mianfromplane[data-v-1fc0fehfff] .el-form-item__label {
+      overflow: hidden;
+      /*超出部分隐藏*/
+      text-overflow: ellipsis;
+      /* 超出部分显示省略号 */
+      white-space: nowrap;
+      /*规定段落中的文本不进行换行 */
+    }
+
+    .mianfromplane[data-v-1fc0fehfff] .el-table th.required>div::before {
+      background-color: #fff;
+    }
+
+    .clearbottom {
+      clear: both;
+      height: 50px;
+      font-size: 1px;
+      line-height: 0px;
+    }
+
+    .footer {
+      width: 100%;
+      height: 45px;
+      position: fixed;
+      bottom: 0;
+      background: white;
+      border-top: 1px solid #dcdfe6;
+      left: 0px;
+      right: 0px;
+    }
+
+    .footer .item:first-child {
+      width: 70%;
+    }
+
+    .footer .item {
+      float: left;
+      width: 30%;
+      height: 45px;
+      line-height: 45px;
+      text-align: center;
+      border-right: 1px solid #dcdfe6;
+    }
+
+    .footer i {
+      font-size: 18px;
+      padding: 5px;
+    }
+
+    .ishidetitle .ctrl-title {
+      display: none;
+    }
+
+    .ishidetitle .ctrl-content {
+      float: left;
+      width: 100% !important;
+      line-height: 42px;
+      margin-left: 0px;
+    }
+
+    .ctrltitle {
+      display: flex;
+    }
+
+    .ctrltitle .ctrl-title {
+      width: 80px;
+      float: left;
+      line-height: 42px;
+      padding-left: 5px;
+    }
+
+    .ctrltitle .ctrl-content {
+      float: left;
+      width: calc(100% - 100px);
+      line-height: 42px;
+    }
+
+    .fr-card-row {
+      width: calc(100% - 33px);
+      padding: 8px;
+      margin: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #d7dae2;
+      border-radius: 0;
+      position: relative;
+    }
+
+    .export-excel-wrapper {
+      display: initial;
+    }
+
+    .layouttable {
+      width: 100%;
+      float: left;
+      /* margin-top: 5px; */
+    }
+
+    .layouttable .layouttable-row {
+      height: 100%;
+      position: relative;
+      /* top: 5px;
+  margin: 0px 5px; */
+      display: flex;
+    }
+
+    .layouttable .layouttable-row .layouttable-item {
+      width: 20%;
+      height: 100%;
+      position: relative;
+      float: left;
+    }
+
+    .layouttable .layouttable-row .layouttable-item .formplane {
+      border: 0px solid #d9d9d9;
+    }
+
+    @media only screen and (min-width: 1024px) {
+      .layouttable-row .layouttable-item {
+        width: var(--pcwith) !important;
+      }
+    }
+
+    @media only screen and (max-width: 1024px) and (min-width: 767px) {
+      .layouttable-row .layouttable-item {
+        width: var(--ipadwith) !important;
+      }
+    }
+
+    @media only screen and (max-width: 767px) {
+      .layouttable-row .layouttable-item {
+        width: var(--mobilewith) !important;
+      }
+    }
+  </style>
+  <script type="text/javascript">
+    var buildcodeObj = new BuildFrom('buildpublish');
+  </script>
+</body>
+
+</html>

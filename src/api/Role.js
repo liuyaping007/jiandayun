@@ -1,6 +1,6 @@
 import request from '@/utils/service'
 
-export function getRoleList(param) {
+export function getRoleList (param) {
   return request({
     url: '/Role/Query',
     method: 'post',
@@ -8,7 +8,7 @@ export function getRoleList(param) {
   })
 }
 
-export function selectOne(id) {
+export function selectOne (id) {
   return request({
     url: '/Role/selectOne/' + id,
     method: 'post',
@@ -16,7 +16,7 @@ export function selectOne(id) {
   })
 }
 
-export function saveRole(param) {
+export function saveRole (param) {
   return request({
     url: '/Role/SaveData',
     method: 'post',
@@ -24,7 +24,7 @@ export function saveRole(param) {
   })
 }
 
-export function saveRole(param) {
+export function saveRole (param) {
   return request({
     url: '/Role/SaveData',
     method: 'post',
@@ -33,7 +33,7 @@ export function saveRole(param) {
 }
 
 
-export function setStopOrStart(param) {
+export function setStopOrStart (param) {
   return request({
     url: '/Role/StopOrStart/' + param.id + '/' + param.status,
     method: 'post',
@@ -41,7 +41,7 @@ export function setStopOrStart(param) {
   })
 }
 
-export function LoadRolePower(id) {
+export function LoadRolePower (id) {
   return request({
     url: '/Role/LoadRolePower/' + id,
     method: 'post',
@@ -49,7 +49,7 @@ export function LoadRolePower(id) {
   })
 }
 
-export function SavePower(param) {
+export function SavePower (param) {
   return request({
     url: '/tappPowermenu/SavePower',
     method: 'post',
@@ -57,7 +57,7 @@ export function SavePower(param) {
   })
 }
 
-export function SaveRoleUser(param) {
+export function SaveRoleUser (param) {
   return request({
     url: '/PowerRole/SaveRoleUser',
     method: 'post',
@@ -66,9 +66,17 @@ export function SaveRoleUser(param) {
 }
 
 
-export function delPowerRole(id) {
+export function delPowerRole (id) {
   return request({
     url: '/PowerRole/del/' + id,
+    method: 'post',
+    data: {}
+  })
+}
+
+export function SearchRole (wordkey) {
+  return request({
+    url: '/Role/SearchRole/' + wordkey,
     method: 'post',
     data: {}
   })

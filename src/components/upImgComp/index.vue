@@ -1,138 +1,90 @@
 <template>
-  <div class="pic-wrap">
-    <a-upload
-      name="image"
-      :customRequest="httpRequest"
-      listType="picture-card"
-      :showUploadList="false"
-      :beforeUpload="beforeUpload"
-      @change="uploadImg"
-      :disabled="disabled1"
+  <div>
+    <el-upload
+      :action="uploadurl"
+      :show-file-list="false"
+      :on-success="handleAvatarSuccess"
+      :before-upload="beforeAvatarUpload"
+      :on-remove="handleRemove"
+      :on-preview="handlePictureCardPreview"
     >
-      <div v-if="imgData" style="position: relative">
-        <img :src="imgData" alt="avatar" :class="loading ? 'up-bc' : ''" />
-        <a-icon class="change-img" v-if="loading" type="loading" />
-      </div>
-      <div v-else>
-        <a-icon :type="loading ? 'loading' : 'plus'" />
-        <div class="ant-upload-text">上传</div>
-      </div>
-    </a-upload>
+      <i class="el-icon-plus avatar-uploader-icon"></i>
+    </el-upload>
+    <el-dialog :visible.sync="dialogVisible">
+      <img width="100%" :src="imageurl" alt="" />
+    </el-dialog>
   </div>
 </template>
-
 <script>
-import { uploadImg } from '@/api/index'
-import { fillUrl } from '@/utils'
-
-/**
- * props
- * imgUrl:默认路径
- *  {
-   uid: '-1',
-   name: 'image.png',
-   status: 'done',
-   url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'
-     }
- * 方法
- * gainList 获取图片列表
- * gainStatus 获取的图片是否在上传中
- **/
 export default {
-  name: 'upImgComp',
-  props: {
-    imgUrl: {
-      type: Object
-    },
-    disabled: {
-      type: Boolean,
-      default: false
-    }
-  },
+  props: ['imgurl'],
   data() {
-    return {
-      imgData: '',
-      loading: false,
-      disabled1: this.disabled
-    }
+    return { uploadurl: '', imageurl: '', dialogVisible: false }
   },
-  watch: {
-    imgUrl: {
-      handler(newValue) {
-        this.imgData = newValue.url
-      },
-      immediate: true,
-      deep: true
-    }
+  created() {
+    // this.uploadurl = this.$transformUrl('/ui/common/uploadfile', true)
+    this.imageurl = this.imgurl
   },
   methods: {
-    async httpRequest(info) {
-      const { file } = info
-      console.log(info)
-      try {
-        const formData = new FormData()
-        formData.append('imageFile', file)
-        const res = await uploadImg(formData)
-        if (res.code === 0) {
-          const imageUrl = fillUrl(res.data.url)
-          const { name, uid, size } = res.data
-          const obj = { name, uid, size }
-          obj.url = imageUrl
-          this.fileList.push(obj)
-          this.$emit('gainList', obj)
-          this.loading = false
-          this.$message.success('上传成功')
-        }
-      } catch (e) {
-        console.log(e)
-        this.loading = false
+    handleAvatarSuccess(res) {
+      if (res.code === 0) {
+        this.imageurl = this.$transformUrl(res.data.url, true)
+        this.$emit('update:imgurl', this.imageurl)
       }
     },
-    beforeUpload(file) {
-      // 上传之前
-      const isJPG = file.type === 'image/jpeg' || file.type === 'image/png'
+    beforeAvatarUpload(file) {
+      const isJPG =
+        file.type === 'image/jpeg' ||
+        file.type === 'image/png' ||
+        file.type === 'image/jpg'
+      const isLt2M = file.size / 1024 / 1024 < 2
+
       if (!isJPG) {
-        this.loading = false
-        this.$message.error('请上传jpg/jpep/png格式的图片!')
+        this.$message.error('上传图片只能是 png,jpeg 格式!')
       }
-      const isLt2M = file.size / 1024 / 1024 < 5
       if (!isLt2M) {
-        this.loading = false
-        this.$message.error('图片大小不能超过5M!')
+        this.$message.error('上传图片大小不能超过 2MB!')
       }
       return isJPG && isLt2M
     },
-    uploadImg(info) {
-      if (info.file.status === 'uploading') {
-        this.loading = true
-        return
-      }
-      if (info.file.status === 'done') {
-        this.loading = false
-      }
-    }
-  }
+    handleRemove() {
+      this.imageurl = ''
+    },
+    handlePictureCardPreview() {
+      this.dialogVisible = true
+    },
+  },
 }
 </script>
-
-<style lang="less" scoped>
-.pic-wrap {
-  /deep/ .change-img {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    margin-top: -5px;
-    margin-left: -8px;
-  }
-  /deep/ .ant-upload {
-    padding: 0;
-  }
-  img {
-    width: 100px;
-    height: 100px;
-  }
-  .up-bc {
-    opacity: 0.5;
-  }
+<style scoped>
+.avatar-uploader .el-upload {
+  border: 1px solid black;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+/* .page-config-wp >>> .el-upload:hover {
+  border: 1px solid #07d1f5 !important;
+} */
+.avatar-uploader .el-upload:hover {
+  border: 1px solid #07d1f5 !important;
+}
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 178px;
+  height: 178px;
+  line-height: 178px;
+  text-align: center;
+  border: 1px solid black;
+}
+.avatar-uploader-icon:hover {
+  border: 1px solid #07d1f5 !important;
+}
+.avatar {
+  width: 178px;
+  height: 138px;
+  display: block;
 }
 </style>

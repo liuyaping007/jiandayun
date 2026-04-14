@@ -1,10 +1,9 @@
-import { getToken } from '@/utils/auth.js'
+import { getToken, setToken, getSidkey, setSidkey } from './auth.js'
 import axios from 'axios'
+import { Message } from 'element-ui';
 import Configs from '@/configs'
-import { message } from 'ant-design-vue'
-
 const service = axios.create({
-  baseURL: Configs.apiUrl, // process.env.VUE_APP_BASE_API
+  baseURL: Configs.apiUrl,   // process.env.VUE_APP_BASE_API
   timeout: 60000 // request timeout
 })
 
@@ -12,6 +11,11 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     config.headers.Authorization = 'Bearer ' + getToken()
+    const sid = getSidkey()
+    if (sid !== '' && sid !== undefined && sid !== 'undefined') {
+      config.headers.__sid = sid
+      config.headers.__ajax = 'json'
+    }
     return config
   },
   error => {
@@ -27,28 +31,24 @@ service.interceptors.response.use(
     if (response.request.responseType === 'blob') {
       return response
     }
-    if (res.code !== 0) {
-      // 获取物流单号接口。。
-      if (res.success) {
-        return res
+    if (res.isValidCodeLogin === false) {
+      setSidkey('')
+      setToken('')
+      if (response.config.baseURL !== "/jd") {
+        window.location.href = '../a/login'
       }
-      message.error(res.errmsg || res.msg || 'Error')
-      // this.$message({
-      //   message: res.errmsg || 'Error',
-      //   type: 'error',
-      //   duration: 5 * 1000
-      // })
-      if (res.code === 401 || res.code === 402 || res.code === 403) {
-        // to re-login
-        message.error('请重新登录')
-      }
-      return Promise.reject(new Error(res.message || 'Error'))
+      //Message.error(res.message)
+      return false
+    }
+    if (res.result === false || res.result === "false") {
+      Message.error(res.message)
+      return false
     }
     return res
   },
   error => {
-    message.error(error.response.data.errmsg || error)
-    return Promise.reject(error)
+    Message.error(error.response.data || error)
+    return { code: 404, msg: error.response.data }
   }
 )
 

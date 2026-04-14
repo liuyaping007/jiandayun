@@ -1,0 +1,34 @@
+:root {
+  --border-color: #DCDFE6;
+  --color: #606266;
+}
+.el-dialog__footer{
+  text-align: right !important;
+}
+.el-dialog--center .el-dialog__body{
+      padding: 5px 5px 6px  !important;
+}
+.el-dialog__footer{
+  padding: 2px 4px 4px  !important;
+}
+.el-collapse-item__header{
+  display: block;
+}
+.el-collapse-item__arrow{
+  float: right;
+}
+.el-collapse-item__header i{
+  margin-top: 15px;
+  padding-left: 20px;
+}
+.v-modal{
+  display: none;
+}
+.w-e-full-screen-editor{
+  background-color: #fff;
+}
+.el-dialog__body {
+  padding: 10px 10px;
+  max-height: 830px;
+  overflow-y: auto;
+}

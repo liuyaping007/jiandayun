@@ -9,6 +9,14 @@ export function queryCurrentMenu(MenuCode) {
     }
   })
 }
+
+export function selectParentMenu() {
+  return request({
+    url: '/tappMenu/selectParentMenu',
+    method: 'post'
+  })
+}
+
 export function GetAllMenu() {
   return request({
     url: '/tappMenu/GetAllMenu',

@@ -7,6 +7,13 @@ export function getPackageInterfaceInfo() {
   })
 }
 
+export function getPackageInfo(param) {
+  return request({
+    url: '/page/selectOne/' + param,
+    method: 'post',
+    data: {}
+  })
+}
 export function addPackageInfo(param) {
   return request({
     url: '/page/add',
@@ -35,7 +42,6 @@ export function saveApiConfigInfo(param) {
     data: param
   })
 }
-
 export function getApiConfigByCallMethodCode(code) {
   return request({
     url: '/apiconfig/getApiConfigByCallMethodCode?code=' + code,
@@ -53,5 +59,12 @@ export function deleteMappingApiConfig(id) {
   return request({
     url: '/apiconfig/deleteMapping?id=' + id,
     method: 'post'
+  })
+}
+export function saveConfigShowCelNames(param) {
+  return request({
+    url: '/apiconfig/saveConfigShowCelNames',
+    method: 'post',
+    data: param
   })
 }
